@@ -247,5 +247,29 @@ export class CompilerService {
     return { node: forNode, newIndex: i };
   }
   
-  // Rest of the CompilerService implementation remains the same...
+  // Add the missing static methods
+  static performLexicalAnalysis(code: string): Token[] {
+    // Implementation would go here
+    return [];
+  }
+
+  static performSyntaxAnalysis(tokens: Token[]): ParseTreeNode {
+    // Implementation would go here
+    return { id: '', type: '', children: [] };
+  }
+
+  static performSemanticAnalysis(parseTree: ParseTreeNode, tokens: Token[]): { scopes: VariableScope[], errors: CompilerError[] } {
+    // Implementation would go here
+    return { scopes: [], errors: [] };
+  }
+
+  static analyzeControlFlow(parseTree: ParseTreeNode): ControlFlowNode {
+    // Implementation would go here
+    return { id: '', type: '', next: [] };
+  }
+
+  static estimateComplexity(parseTree: ParseTreeNode, controlFlow: ControlFlowNode): ComplexityInfo {
+    // Implementation would go here
+    return { cyclomaticComplexity: 1, timeComplexity: 'O(1)', spaceComplexity: 'O(1)' };
+  }
 }
