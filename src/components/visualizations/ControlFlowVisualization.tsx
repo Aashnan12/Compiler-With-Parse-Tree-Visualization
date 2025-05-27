@@ -12,7 +12,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
   
   useEffect(() => {
     if (!controlFlow || !svgRef.current) return;
-    
     renderControlFlow(controlFlow);
   }, [controlFlow]);
   
@@ -75,7 +74,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       y: number, 
       level: number
     ): { width: number } => {
-      // Add the current node
       nodes.push({
         id: node.id,
         type: node.type,
@@ -90,17 +88,13 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
         return { width: NODE_WIDTH };
       }
       
-      // Calculate the total width needed for children
       const childrenWidths = node.children.map(child => calculateSubtreeWidth(child));
       const totalChildrenWidth = childrenWidths.reduce((sum, w) => sum + w, 0) + 
-                                 (node.children.length - 1) * HORIZONTAL_GAP;
+                               (node.children.length - 1) * HORIZONTAL_GAP;
       
-      // Start position for the first child
       let childX = x - totalChildrenWidth / 2 + childrenWidths[0] / 2;
       
-      // Layout each child
       node.children.forEach((child, i) => {
-        // Add link to this child
         links.push({
           source: node.id,
           target: child.id,
@@ -113,7 +107,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
             undefined
         });
         
-        // Layout this child
         const childResult = layoutNodes(
           child, 
           childX, 
@@ -121,7 +114,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
           level + 1
         );
         
-        // Move to the position for the next child
         if (i < node.children.length - 1) {
           childX += childResult.width + HORIZONTAL_GAP;
         }
@@ -156,8 +148,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       const linkGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.appendChild(linkGroup);
       
-      // Draw the link
-      const linkElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       const dx = link.targetX - link.sourceX;
       const dy = link.targetY - link.sourceY;
       const controlPoint1X = link.sourceX;
@@ -165,6 +155,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       const controlPoint2X = link.targetX;
       const controlPoint2Y = link.sourceY + dy / 2;
       
+      const linkElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       linkElement.setAttribute(
         'd', 
         `M ${link.sourceX} ${link.sourceY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${link.targetX} ${link.targetY}`
@@ -176,7 +167,6 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       
       linkGroup.appendChild(linkElement);
       
-      // Add a label if needed
       if (link.label) {
         const midX = (link.sourceX + link.targetX) / 2;
         const midY = link.sourceY + dy / 2;
