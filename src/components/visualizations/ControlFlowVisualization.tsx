@@ -151,7 +151,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
     svg.setAttribute('width', String(maxX - minX + 100));
     svg.setAttribute('height', String(maxY - minY + 100));
     
-    // Draw the links
+    // Draw the links first (so they appear behind nodes)
     links.forEach(link => {
       const linkGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.appendChild(linkGroup);
@@ -209,6 +209,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       let nodeShape;
       let fill;
       let stroke;
+      let textY;
       
       switch (node.type) {
         case 'ENTRY':
@@ -220,6 +221,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
           nodeShape.setAttribute('ry', String(NODE_HEIGHT / 2));
           fill = node.type === 'ENTRY' ? '#d1fae5' : '#fee2e2';
           stroke = node.type === 'ENTRY' ? '#059669' : '#dc2626';
+          textY = node.y + NODE_HEIGHT / 2;
           break;
           
         case 'IF':
@@ -233,9 +235,9 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
           nodeShape.setAttribute('points', diamondPoints.map(p => p.join(',')).join(' '));
           fill = '#fef3c7';
           stroke = '#d97706';
+          textY = node.y + NODE_HEIGHT / 2 - 10;
           break;
           
-        case 'WHILE':
         case 'FOR':
           nodeShape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
           nodeShape.setAttribute('x', String(node.x - NODE_WIDTH / 2));
@@ -246,6 +248,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
           nodeShape.setAttribute('ry', '20');
           fill = '#dbeafe';
           stroke = '#3b82f6';
+          textY = node.y + NODE_HEIGHT / 2 - 10;
           break;
           
         default:
@@ -258,6 +261,7 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
           nodeShape.setAttribute('ry', '4');
           fill = '#f3f4f6';
           stroke = '#6b7280';
+          textY = node.y + NODE_HEIGHT / 2 - 10;
       }
       
       nodeShape.setAttribute('fill', fill);
@@ -265,27 +269,39 @@ const ControlFlowVisualization: React.FC<ControlFlowVisualizationProps> = ({
       nodeShape.setAttribute('stroke-width', '2');
       nodeGroup.appendChild(nodeShape);
       
-      // Add text for the node
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', String(node.x));
-      text.setAttribute('y', String(node.y + NODE_HEIGHT / 2));
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('font-size', '12px');
-      text.textContent = node.type;
-      nodeGroup.appendChild(text);
+      // Create a foreignObject for HTML text content
+      const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+      foreignObject.setAttribute('x', String(node.x - NODE_WIDTH / 2));
+      foreignObject.setAttribute('y', String(node.y));
+      foreignObject.setAttribute('width', String(NODE_WIDTH));
+      foreignObject.setAttribute('height', String(NODE_HEIGHT));
       
-      // Add the condition for IF nodes
-      if (node.type === 'IF' && node.condition) {
-        const conditionText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        conditionText.setAttribute('x', String(node.x));
-        conditionText.setAttribute('y', String(node.y + NODE_HEIGHT / 2 + 15));
-        conditionText.setAttribute('text-anchor', 'middle');
-        conditionText.setAttribute('dominant-baseline', 'middle');
-        conditionText.setAttribute('font-size', '10px');
+      const div = document.createElement('div');
+      div.style.width = '100%';
+      div.style.height = '100%';
+      div.style.display = 'flex';
+      div.style.flexDirection = 'column';
+      div.style.alignItems = 'center';
+      div.style.justifyContent = 'center';
+      div.style.padding = '4px';
+      div.style.textAlign = 'center';
+      div.style.fontSize = '12px';
+      
+      const typeText = document.createElement('div');
+      typeText.style.fontWeight = 'bold';
+      typeText.textContent = node.type;
+      div.appendChild(typeText);
+      
+      if (node.condition) {
+        const conditionText = document.createElement('div');
+        conditionText.style.fontSize = '10px';
+        conditionText.style.marginTop = '2px';
         conditionText.textContent = node.condition;
-        nodeGroup.appendChild(conditionText);
+        div.appendChild(conditionText);
       }
+      
+      foreignObject.appendChild(div);
+      nodeGroup.appendChild(foreignObject);
     });
   };
   
